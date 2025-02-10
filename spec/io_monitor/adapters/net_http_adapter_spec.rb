@@ -32,4 +32,21 @@ RSpec.describe IoMonitor::NetHttpAdapter do
 
     expect(aggregator).to have_received(:increment).with(described_class.kind, body.bytesize)
   end
+
+  it "does not fail when read_body was called with a block" do
+    allow(aggregator).to receive(:increment)
+
+    parsed_uri = URI("http://#{url}")
+
+    Net::HTTP.start(url, 80) do |http|
+      request = Net::HTTP::Get.new parsed_uri
+
+      http.request request do |response|
+        response.read_body { |_chunk| }
+        expect(response.body).to be_an_instance_of ::Net::ReadAdapter
+      end
+    end
+
+    expect(aggregator).to have_received(:increment).with(described_class.kind, body.bytesize)
+  end
 end

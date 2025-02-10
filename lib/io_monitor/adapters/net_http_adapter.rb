@@ -2,6 +2,7 @@
 
 require "net/http"
 require "io_monitor/patches/net_http_adapter_patch"
+require "io_monitor/patches/net_read_adapter_patch"
 
 module IoMonitor
   class NetHttpAdapter < BaseAdapter
@@ -11,6 +12,7 @@ module IoMonitor
 
     def initialize!
       ActiveSupport.on_load(:after_initialize) do
+        Net::ReadAdapter.prepend(NetReadAdapterPatch)
         Net::HTTP.prepend(NetHttpAdapterPatch)
 
         if defined?(::WebMock)
